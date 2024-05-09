@@ -3,6 +3,7 @@ from flask import current_app
 from project import create_app, db
 from project.models import User
 from werkzeug.security import check_password_hash
+from sqlalchemy import select
 
 
 class TestWebApp(unittest.TestCase):
@@ -35,8 +36,8 @@ class TestWebApp(unittest.TestCase):
         assert response.status_code == 200
 
     def test_no_access_to_profile(self):
-        # TODO: Check that non-logged-in user should be redirected to /login
-        assert False
+        response = self.client.get('/profile')
+        assert response.status_code == 302
 
     def test_register_user(self):
         response = self.client.post('/signup', data = {
@@ -55,6 +56,7 @@ class TestWebApp(unittest.TestCase):
         }, follow_redirects = True)
         assert response.status_code == 200
         html = response.get_data(as_text = True)
+        print(html)
         assert 'test user' in html
 
     def test_hashed_passwords(self):
@@ -77,7 +79,9 @@ class TestWebApp(unittest.TestCase):
             'name' : 'test user',
             'password' : 'test123'
         }, follow_redirects = True)
-        assert response.status_code == 200 
+        users = db.session.execute(select(User)).all()
+        # print(users)
+        assert (response.status_code == 200) and len(users) > 0
 
     def test_xss_vulnerability(self):
         # TODO: Can we store javascript tags in the username field?
