@@ -86,7 +86,7 @@ class TestWebApp(unittest.TestCase):
     def test_xss_vulnerability(self):
         response = self.client.post('/signup', data = {
             'email' : 'user@test.com',
-            'name' : '<button>alert("hello")</button>',
+            'name' : '<button onlick="alert(\'asas\')">aa</button>',
             'password' : 'test123'
         }, follow_redirects = True)
         assert response.status_code == 200
@@ -101,6 +101,6 @@ class TestWebApp(unittest.TestCase):
         assert response.status_code == 200
         html = response.get_data(as_text = True)
         print(html)
-        assert '<button>' not in html
+        assert '<button onlick="alert(\'asas\')">' not in html
 
 
